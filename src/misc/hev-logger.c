@@ -16,6 +16,10 @@
 #include <sys/uio.h>
 #include <sys/stat.h>
 
+#if defined(__APPLE__) || defined(__MACH__)
+#include <os/log.h>
+#endif
+
 #include "hev-logger.h"
 
 static int fd = -1;
@@ -106,7 +110,14 @@ hev_logger_log (HevLoggerLevel level, const char *fmt, ...)
     iov[3].iov_base = "\n";
     iov[3].iov_len = 1;
 
+#if defined(__APPLE__) || defined(__MACH__)
+    os_log (OS_LOG_DEFAULT, "%{public}s %{public}s %{public}s %{public}s",
+            (char *)iov[0].iov_base, (char *)iov[1].iov_base,
+            (char *)iov[2].iov_base, (char *)iov[3].iov_base);
+#else
     if (writev (fd, iov, 4)) {
         /* ignore return value */
     }
+#endif
+    
 }
